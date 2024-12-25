@@ -1,10 +1,37 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CustomerRepository } from './repositories/customer.repository';
+import { ProductRepository } from './repositories/product.repository';
+import { OrderRepository } from './repositories/order.repository';
+import { TransactionRepository } from './repositories/transaction.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Customer } from './entities/customer.entity';
+import { Product } from './entities/product.entity';
+import { Order } from './entities/order.entity';
+import { Transaction } from './entities/transaction.entity';
 
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'postgres',
+      port: 5432,
+      username: 'root',
+      password: '12345',
+      database: 'rideon',
+      entities: [Customer, Product, Order, Transaction],
+      synchronize: true,
+    }),
+    TypeOrmModule.forFeature([Customer, Product, Order, Transaction]),
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    CustomerRepository,
+    ProductRepository,
+    OrderRepository,
+    TransactionRepository,
+  ],
 })
 export class AppModule {}
