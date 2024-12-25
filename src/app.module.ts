@@ -10,6 +10,8 @@ import { Customer } from './entities/customer.entity';
 import { Product } from './entities/product.entity';
 import { Order } from './entities/order.entity';
 import { Transaction } from './entities/transaction.entity';
+import { OrderModule } from './orders/order.module';
+import { RepositoryModule } from './repositories/repository.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { Transaction } from './entities/transaction.entity';
       synchronize: true,
     }),
     TypeOrmModule.forFeature([Customer, Product, Order, Transaction]),
+    OrderModule,
+    RepositoryModule,
   ],
   controllers: [AppController],
   providers: [
