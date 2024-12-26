@@ -1,10 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CustomerRepository } from './repositories/customer.repository';
-import { ProductRepository } from './repositories/product.repository';
-import { OrderRepository } from './repositories/order.repository';
-import { TransactionRepository } from './repositories/transaction.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { Product } from './entities/product.entity';
@@ -13,6 +9,8 @@ import { Transaction } from './entities/transaction.entity';
 import { OrderModule } from './orders/order.module';
 import { RepositoryModule } from './repositories/repository.module';
 import { ProductModule } from './product/product.module';
+import { TransactionModule } from './services/transaction/transaction.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -30,14 +28,10 @@ import { ProductModule } from './product/product.module';
     OrderModule,
     ProductModule,
     RepositoryModule,
+    TransactionModule,
+    HttpModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    CustomerRepository,
-    ProductRepository,
-    OrderRepository,
-    TransactionRepository,
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
