@@ -12,6 +12,7 @@ import { Order } from './entities/order.entity';
 import { Transaction } from './entities/transaction.entity';
 import { OrderModule } from './orders/order.module';
 import { RepositoryModule } from './repositories/repository.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RepositoryModule } from './repositories/repository.module';
     }),
     TypeOrmModule.forFeature([Customer, Product, Order, Transaction]),
     OrderModule,
+    ProductModule,
     RepositoryModule,
   ],
   controllers: [AppController],
