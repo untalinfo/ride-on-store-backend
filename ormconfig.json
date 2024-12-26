@@ -1,0 +1,13 @@
+{
+  "type": "postgres",
+  "host": "postgres",
+  "port": 5432,
+  "username": "root",
+  "password": "12345",
+  "database": "rideon",
+  "entities": ["dist/**/*.entity.js"],
+  "migrations": ["dist/migrations/*.js"],
+  "cli": {
+    "migrationsDir": "src/migrations"
+  }
+}
