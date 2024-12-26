@@ -22,6 +22,10 @@ export class ProductRepository {
     return this.productRepository.findBy({ id: In(ids) });
   }
 
+  async findAll(): Promise<Product[]> {
+    return this.productRepository.find();
+  }
+
   async update(id: string, product: Partial<Product>): Promise<Product> {
     await this.productRepository.update(id, product);
     return this.findById(id);
