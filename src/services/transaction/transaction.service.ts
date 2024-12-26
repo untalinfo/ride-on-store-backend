@@ -27,7 +27,7 @@ export class TransactionService {
   }
 
   //<Referencia><Monto><Moneda><SecretoIntegridad>"
-  private generate_signature({
+  async generate_signature({
     transaction_reference,
     amount_in_cents,
     currency,
@@ -35,7 +35,7 @@ export class TransactionService {
     transaction_reference: string;
     amount_in_cents: number;
     currency: string;
-  }): string {
+  }): Promise<string> {
     const data = `${transaction_reference}${amount_in_cents}${currency}${this.integrity_key}`;
     return crypto.createHash('sha256').update(data).digest('hex');
   }
