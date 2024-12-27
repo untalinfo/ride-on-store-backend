@@ -39,4 +39,26 @@ export class TransactionService {
     const data = `${transaction_reference}${amount_in_cents}${currency}${this.integrity_key}`;
     return crypto.createHash('sha256').update(data).digest('hex');
   }
+
+  async tokenize_credit_card({
+    card_number,
+    card_holder,
+    card_expiration_date,
+    card_cvv,
+  }: {
+    card_number: string;
+    card_holder: string;
+    card_expiration_date: string;
+    card_cvv: string;
+  }): Promise<string> {
+    const response: AxiosResponse = await firstValueFrom(
+      this.httpService.post(`${this.api_url}tokens/cards`, {
+        number: card_number,
+        card_holder,
+        expiration_date: card_expiration_date,
+        cvv: card_cvv,
+      }),
+    );
+    return response.data.data.id;
+  }
 }
