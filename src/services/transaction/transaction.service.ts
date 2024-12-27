@@ -87,7 +87,7 @@ export class TransactionService {
     });
     const response: AxiosResponse = await firstValueFrom(
       this.httpService.post(
-        `${this.api_url}transactions`,
+        `${this.api_url}/transactions`,
         {
           acceptance_token,
           amount_in_cents,
