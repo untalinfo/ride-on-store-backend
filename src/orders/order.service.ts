@@ -5,6 +5,8 @@ import { CustomerRepository } from '../repositories/customer.repository';
 import { OrderRepository } from '../repositories/order.repository';
 import { ProductRepository } from '../repositories/product.repository';
 import { OrderStatus } from '../entities/enums';
+import { CreateCardTokenDto } from './dtos/create-card-token-dto';
+import { Result } from 'src/interfaces/response.interface';
 
 @Injectable()
 export class OrderService {
@@ -52,5 +54,16 @@ export class OrderService {
 
   async getOrderById(id: string): Promise<Order> {
     return this.orderRepository.findById(id);
+  }
+
+  async createToken(
+    createCardTokenDto: CreateCardTokenDto,
+  ): Promise<Result<any>> {
+    const response = {
+      hasError: false,
+      message: 'Token created successfully',
+      data: {},
+    };
+    return response;
   }
 }
