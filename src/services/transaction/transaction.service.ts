@@ -47,12 +47,21 @@ export class TransactionService {
     card_cvv: string;
   }): Promise<string> {
     const response: AxiosResponse = await firstValueFrom(
-      this.httpService.post(`${this.api_url}tokens/cards`, {
-        number: card_number,
-        card_holder,
-        expiration_date: card_expiration_date,
-        cvv: card_cvv,
-      }),
+      this.httpService.post(
+        `${this.api_url}tokens/cards`,
+        {
+          number: card_number,
+          card_holder,
+          expiration_date: card_expiration_date,
+          cvv: card_cvv,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.api_public_key}`,
+          },
+        },
+      ),
     );
     return response.data.data.id;
   }
@@ -63,7 +72,7 @@ export class TransactionService {
     );
     return response.data.data.id;
   }
-  async create_transaction_with_transaction({
+  async create_transaction_with_credit_card_token({
     acceptance_token,
     amount_in_cents,
     currency,

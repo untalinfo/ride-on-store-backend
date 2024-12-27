@@ -92,7 +92,9 @@ describe('TransactionService', () => {
       };
       jest.spyOn(httpService, 'post').mockReturnValue(of(mockAxiosResponse));
       const response =
-        await service.create_transaction_with_transaction(transactionDetails);
+        await service.create_transaction_with_credit_card_token(
+          transactionDetails,
+        );
       expect(response).toEqual(mockAxiosResponse.data);
       expect(httpService.post).toHaveBeenCalledWith(
         'https://sandbox.wompi.co/v1/transactions',
