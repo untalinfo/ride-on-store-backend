@@ -8,4 +8,6 @@ export class CreateCardTokenDto {
   card_exp_year: string;
   @IsString()
   card_cvc: string;
+  @IsString()
+  card_holder: string;
 }

@@ -11,6 +11,7 @@ export class TransactionService {
   private readonly api_public_key: string;
   private readonly api_private_key: string;
   private readonly integrity_key: string;
+
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
@@ -36,24 +37,27 @@ export class TransactionService {
   }
 
   async tokenize_credit_card({
-    card_number,
+    number,
     card_holder,
-    card_expiration_date,
-    card_cvv,
+    exp_month,
+    exp_year,
+    cvc,
   }: {
-    card_number: string;
+    number: string;
     card_holder: string;
-    card_expiration_date: string;
-    card_cvv: string;
+    exp_month: string;
+    exp_year: string;
+    cvc: string;
   }): Promise<string> {
     const response: AxiosResponse = await firstValueFrom(
       this.httpService.post(
-        `${this.api_url}tokens/cards`,
+        `${this.api_url}/tokens/cards`,
         {
-          number: card_number,
+          number,
           card_holder,
-          expiration_date: card_expiration_date,
-          cvv: card_cvv,
+          exp_month,
+          exp_year,
+          cvc,
         },
         {
           headers: {
@@ -63,7 +67,7 @@ export class TransactionService {
         },
       ),
     );
-    return response.data.data.id;
+    return response.data.data;
   }
 
   async get_acceptance_tokens(): Promise<string> {
@@ -72,6 +76,7 @@ export class TransactionService {
     );
     return response.data.data.id;
   }
+
   async create_transaction_with_credit_card_token({
     acceptance_token,
     amount_in_cents,
@@ -94,6 +99,7 @@ export class TransactionService {
       amount_in_cents,
       currency,
     });
+
     const response: AxiosResponse = await firstValueFrom(
       this.httpService.post(
         `${this.api_url}/transactions`,
@@ -118,8 +124,10 @@ export class TransactionService {
         },
       ),
     );
+
     return response.data;
   }
+
   async get_transaction(transaction_id: string): Promise<string> {
     const response: AxiosResponse = await firstValueFrom(
       this.httpService.get(`${this.api_url}transactions/${transaction_id}`, {
