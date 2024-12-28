@@ -10,7 +10,7 @@ export class CustomerRepository {
     private readonly customerRepository: Repository<Customer>,
   ) {}
 
-  async create(customer: Customer): Promise<Customer> {
+  async create(customer: Partial<Customer>): Promise<Customer> {
     return this.customerRepository.save(customer);
   }
 
