@@ -22,4 +22,9 @@ export class OrderController {
   async createToken(@Body() createCardTokenDto: CreateCardTokenDto) {
     return this.orderService.createToken(createCardTokenDto);
   }
+
+  @Get('token/acceptance')
+  async get_acceptance_token() {
+    return this.orderService.get_acceptance_token();
+  }
 }

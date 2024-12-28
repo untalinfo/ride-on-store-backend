@@ -74,7 +74,7 @@ export class TransactionService {
     const response: AxiosResponse = await firstValueFrom(
       this.httpService.get(`${this.api_url}merchants/${this.api_public_key}`),
     );
-    return response.data.data.id;
+    return response.data.data;
   }
 
   async create_transaction_with_credit_card_token({

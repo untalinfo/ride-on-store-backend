@@ -19,7 +19,7 @@ export class OrderService {
     private readonly orderRepository: OrderRepository,
     private readonly customerRepository: CustomerRepository,
     private readonly productRepository: ProductRepository,
-    private readonly TransactionService: TransactionService,
+    private readonly transactionService: TransactionService,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Result<any>> {
@@ -72,7 +72,7 @@ export class OrderService {
       result.data.order = order;
     } catch (error) {
       result.hasError = true;
-      result.message = 'Error creating order';
+      result.message = `Error creating order: ${error}`;
     }
 
     return result;
@@ -80,6 +80,23 @@ export class OrderService {
 
   async getOrderById(id: string): Promise<Order> {
     return this.orderRepository.findById(id);
+  }
+
+  async get_acceptance_token(): Promise<Result<any>> {
+    const result = {
+      hasError: false,
+      message: 'Acceptance token created successfully',
+      data: {},
+    };
+    try {
+      const response = await this.transactionService.get_acceptance_tokens();
+      result.data = response;
+    } catch (error) {
+      console.error('Error creating acceptance token', error);
+      result.hasError = true;
+      result.message = 'Error creating acceptance token';
+    }
+    return result;
   }
 
   async createToken(
@@ -92,7 +109,7 @@ export class OrderService {
     };
 
     try {
-      const response = await this.TransactionService.tokenize_credit_card({
+      const response = await this.transactionService.tokenize_credit_card({
         number: createCardTokenDto.card_number,
         card_holder: createCardTokenDto.card_holder,
         cvc: createCardTokenDto.card_cvc,
