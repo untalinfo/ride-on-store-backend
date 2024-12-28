@@ -1,5 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  Index,
+} from 'typeorm';
 import { Order } from './order.entity';
+import { IsEmail } from 'class-validator';
 
 @Entity()
 export class Customer {
@@ -9,7 +16,9 @@ export class Customer {
   @Column()
   full_name: string;
 
-  @Column()
+  @Column({ unique: true })
+  @IsEmail()
+  @Index()
   email: string;
 
   @Column()
