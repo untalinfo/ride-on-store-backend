@@ -11,8 +11,8 @@ export class Product {
   @Column()
   image: string;
 
-  @Column()
-  price: string;
+  @Column('int')
+  price: number;
 
   @Column()
   description: string;
