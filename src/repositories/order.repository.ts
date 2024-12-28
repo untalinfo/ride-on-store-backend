@@ -10,7 +10,7 @@ export class OrderRepository {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  async create(order: Order): Promise<Order> {
+  async create(order: Partial<Order>): Promise<Order> {
     return this.orderRepository.save(order);
   }
 

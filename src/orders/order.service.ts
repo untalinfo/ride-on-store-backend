@@ -1,12 +1,17 @@
+import { BASE_FEE_RATE } from './../constants/index';
 import { Injectable } from '@nestjs/common';
 import { Order } from '../entities/order.entity';
-import { CreateOrderDto } from './dtos/create-order-dto';
+import { CreateOrderDto } from './dtos/create-order-dtos';
 import { CustomerRepository } from '../repositories/customer.repository';
 import { OrderRepository } from '../repositories/order.repository';
 import { ProductRepository } from '../repositories/product.repository';
 import { CreateCardTokenDto } from './dtos/create-card-token-dto';
 import { Result } from 'src/interfaces/response.interface';
 import { TransactionService } from 'src/services/transaction/transaction.service';
+import { Product } from 'src/entities/product.entity';
+import { Customer } from 'src/entities/customer.entity';
+import { OrderStatus } from 'src/entities/enums';
+import { DELIVERY_FEE_IN_CENTS } from 'src/constants';
 
 @Injectable()
 export class OrderService {
@@ -18,7 +23,7 @@ export class OrderService {
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Result<any>> {
-    const result = {
+    const result: Result<any> = {
       hasError: false,
       message: 'Token created successfully',
       data: {},
@@ -30,33 +35,45 @@ export class OrderService {
       createOrderDto.customer_phone_number,
     );
 
-    // const validate_product_stock_result = validate_product_stock(
-    //   createOrderDto.product_ids,
-    // );
+    if (validate_customer_result.hasError) {
+      return validate_customer_result;
+    }
 
-    // const {
-    //   customer_email,
-    //   customer_phone_number,
-    //   customre_full_name,
-    //   product_ids,
-    //   shipping_addrs_line,
-    //   shipping_address_city,
-    // } = createOrderDto;
+    const validate_products_result = await this.validate_products(
+      createOrderDto.product_ids,
+    );
 
-    // const order = this.orderRepository.create({
-    //   id: '0',
-    //   customer,
-    //   transactions: [],
-    //   products,
-    //   shipping_addrs_line,
-    //   shipping_address_city,
-    //   base_fee: '0',
-    //   delivery_fee: '0',
-    //   order_status: OrderStatus.CREATED,
-    //   delivery_status: 'PENDING',
-    //   total_amount: '0',
-    //   created_at: new Date().toISOString(),
-    // });
+    if (validate_products_result.hasError) {
+      return validate_products_result;
+    }
+
+    const calculate_order_amounts_result = this.calculate_order_amounts(
+      validate_products_result.data,
+    );
+
+    const { shipping_addrs_line, shipping_address_city } = createOrderDto;
+
+    try {
+      const order = await this.orderRepository.create({
+        customer: validate_customer_result.data.customer,
+        products: validate_products_result.data,
+        shipping_addrs_line,
+        shipping_address_city,
+        base_fee_in_cents:
+          calculate_order_amounts_result.data.base_fee_in_cents,
+        delivery_fee_in_cents:
+          calculate_order_amounts_result.data.delivery_fee_in_cents,
+        order_status: OrderStatus.ACTIVE,
+        delivery_status: 'PENDING',
+        total_amount_in_cents:
+          calculate_order_amounts_result.data.total_order_in_cents,
+      });
+
+      result.data.order = order;
+    } catch (error) {
+      result.hasError = true;
+      result.message = 'Error creating order';
+    }
 
     return result;
   }
@@ -98,11 +115,11 @@ export class OrderService {
     phone_number: string,
   ): Promise<
     Result<{
-      customer_id?: string;
+      customer?: Customer;
     }>
   > {
     const result: Result<{
-      customer_id?: string;
+      customer?: Customer;
     }> = {
       hasError: false,
       message: '',
@@ -110,7 +127,7 @@ export class OrderService {
     };
     let customer = await this.customerRepository.findByEmail(email);
     if (customer) {
-      result.data.customer_id = customer.id;
+      result.data.customer = customer;
       return result;
     } else {
       customer = await this.customerRepository.create({
@@ -119,12 +136,14 @@ export class OrderService {
         phone_number,
       });
 
-      result.data.customer_id = customer.id;
+      result.data.customer = customer;
       return result;
     }
   }
 
-  async validate_products(product_ids: string[]): Promise<Result<Product[]>> {
+  private async validate_products(
+    product_ids: string[],
+  ): Promise<Result<Product[]>> {
     const products = await this.productRepository.findByIds(product_ids);
     if (products.length !== product_ids.length) {
       return {
@@ -150,5 +169,35 @@ export class OrderService {
       data: products,
     };
   }
-  // Call Wompi API to create a token
+
+  private calculate_order_amounts(products: Product[]): Result<{
+    total_in_products_in_cents: number;
+    base_fee_in_cents: number;
+    delivery_fee_in_cents: number;
+    total_order_in_cents: number;
+  }> {
+    let total_in_products_in_cents = 0;
+    let base_fee_in_cents = 0;
+    const delivery_fee_in_cents = DELIVERY_FEE_IN_CENTS;
+
+    for (const product of products) {
+      total_in_products_in_cents += product.price;
+    }
+
+    base_fee_in_cents = total_in_products_in_cents * BASE_FEE_RATE;
+
+    return {
+      hasError: false,
+      message: '',
+      data: {
+        total_in_products_in_cents,
+        base_fee_in_cents,
+        delivery_fee_in_cents,
+        total_order_in_cents:
+          total_in_products_in_cents +
+          base_fee_in_cents +
+          delivery_fee_in_cents,
+      },
+    };
+  }
 }

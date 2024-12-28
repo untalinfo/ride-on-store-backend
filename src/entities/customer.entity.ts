@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   Index,
+  CreateDateColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
 import { IsEmail } from 'class-validator';
@@ -24,7 +25,7 @@ export class Customer {
   @Column()
   phone_number: string;
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: string;
 
   @OneToMany(() => Order, (order) => order.customer)
