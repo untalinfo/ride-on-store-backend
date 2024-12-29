@@ -125,7 +125,7 @@ export class TransactionService {
       ),
     );
 
-    return response.data;
+    return response.data?.data;
   }
 
   async get_transaction(transaction_id: string): Promise<string> {
