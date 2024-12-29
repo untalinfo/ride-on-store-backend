@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
   port: 5432,
   username: 'root',
   password: '12345',
-  database: 'wompi',
+  database: 'rideon',
   entities: [Customer, Product, Order, Transaction],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,
