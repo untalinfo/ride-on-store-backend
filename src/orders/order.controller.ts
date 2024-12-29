@@ -3,6 +3,7 @@ import { Controller, Post, Body, Get } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dtos/create-order-dtos';
 import { CreateCardTokenDto } from './dtos/create-card-token-dto';
+import { CapturePaymentTokenDto } from './dtos/capture-payment-token-dto';
 
 @Controller('orders')
 export class OrderController {
@@ -16,6 +17,11 @@ export class OrderController {
   @Get(':id')
   async getOrderById(id: string) {
     return this.orderService.getOrderById(id);
+  }
+
+  @Post('capture-payment')
+  async capturePayment(@Body() capturePaymentTokenDto: CapturePaymentTokenDto) {
+    return this.orderService.capturePayment(capturePaymentTokenDto);
   }
 
   @Post('token/cards')
