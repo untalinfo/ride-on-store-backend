@@ -12,6 +12,6 @@ export const AppDataSource = new DataSource({
   password: '12345',
   database: 'rideon',
   entities: [Customer, Product, Order, Transaction],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['dist/src/migrations/*.js'],
   synchronize: false,
 });

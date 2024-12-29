@@ -12,6 +12,8 @@ import { Product } from 'src/entities/product.entity';
 import { Customer } from 'src/entities/customer.entity';
 import { OrderStatus } from 'src/entities/enums';
 import { DELIVERY_FEE_IN_CENTS } from 'src/constants';
+import { CapturePaymentTokenDto } from './dtos/capture-payment-token-dto';
+import { AppDataSource } from 'data-source';
 
 @Injectable()
 export class OrderService {
@@ -19,7 +21,7 @@ export class OrderService {
     private readonly orderRepository: OrderRepository,
     private readonly customerRepository: CustomerRepository,
     private readonly productRepository: ProductRepository,
-    private readonly transactionService: TransactionService,
+    private readonly wompiService: TransactionService,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Result<any>> {
@@ -53,6 +55,10 @@ export class OrderService {
 
     const { shipping_addrs_line, shipping_address_city } = createOrderDto;
 
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const order = await this.orderRepository.create({
         customer: validate_customer_result.data.customer,
@@ -69,10 +75,23 @@ export class OrderService {
           calculate_order_amounts_result.data.total_order_in_cents,
       });
 
-      result.data.order = order;
+      const savedOrder = await queryRunner.manager.save(order);
+
+      // Decrease stock for each product
+      for (const product of validate_products_result.data) {
+        product.stock -= 1;
+        await queryRunner.manager.save(product);
+      }
+
+      await queryRunner.commitTransaction();
+      result.data.order = savedOrder;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error creating order', error);
       result.hasError = true;
-      result.message = `Error creating order: ${error}`;
+      result.message = 'Error creating order';
+    } finally {
+      await queryRunner.release();
     }
 
     return result;
@@ -88,14 +107,16 @@ export class OrderService {
       message: 'Acceptance token created successfully',
       data: {},
     };
+
     try {
-      const response = await this.transactionService.get_acceptance_tokens();
+      const response = await this.wompiService.get_acceptance_tokens();
       result.data = response;
     } catch (error) {
       console.error('Error creating acceptance token', error);
       result.hasError = true;
       result.message = 'Error creating acceptance token';
     }
+
     return result;
   }
 
@@ -109,7 +130,7 @@ export class OrderService {
     };
 
     try {
-      const response = await this.transactionService.tokenize_credit_card({
+      const response = await this.wompiService.tokenize_credit_card({
         number: createCardTokenDto.card_number,
         card_holder: createCardTokenDto.card_holder,
         cvc: createCardTokenDto.card_cvc,
@@ -215,6 +236,80 @@ export class OrderService {
           base_fee_in_cents +
           delivery_fee_in_cents,
       },
+    };
+  }
+
+  async capturePayment({
+    acceptance_token,
+    order_id,
+    payment_method_token,
+    installments,
+  }: CapturePaymentTokenDto): Promise<Result<any>> {
+    const result = {
+      hasError: false,
+      message: 'Payment captured successfully',
+      data: {},
+    };
+
+    const validate_order_result = await this.validate_order(order_id);
+
+    if (validate_order_result.hasError) {
+      return validate_order_result;
+    }
+
+    const { data: order } = validate_order_result;
+
+    try {
+      const response =
+        await this.wompiService.create_transaction_with_credit_card_token({
+          acceptance_token,
+          transaction_reference: order_id,
+          credit_card_token: payment_method_token,
+          amount_in_cents: order.total_amount_in_cents,
+          installments: installments,
+          customer_email: order.customer.email,
+          currency: 'COP',
+        });
+
+      order.order_status = OrderStatus.PROCESSING;
+
+      //create transaction
+
+      result.data = response;
+    } catch (error) {
+      console.error(
+        'Error capturing payment',
+        JSON.stringify(error.response.data),
+      );
+      result.hasError = true;
+      result.message = 'Error capturing payment';
+    }
+
+    return result;
+  }
+
+  private async validate_order(order_id: string): Promise<Result<Order>> {
+    const order = await this.orderRepository.findById(order_id);
+    if (!order) {
+      return {
+        hasError: true,
+        message: 'Order not found',
+        data: null,
+      };
+    }
+
+    if (order.order_status !== OrderStatus.ACTIVE) {
+      return {
+        hasError: true,
+        message: 'Order is in invalid state for payment (not active)',
+        data: null,
+      };
+    }
+
+    return {
+      hasError: false,
+      message: 'Order is valid',
+      data: order,
     };
   }
 }
