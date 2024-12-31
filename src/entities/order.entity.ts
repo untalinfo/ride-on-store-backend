@@ -11,6 +11,7 @@ import {
 import { Product } from './product.entity';
 import { Transaction } from './transaction.entity';
 import { Customer } from './customer.entity';
+import { OrderDelliveryStatus } from './enums';
 
 @Entity()
 export class Order {
@@ -43,7 +44,7 @@ export class Order {
   order_status: string;
 
   @Column()
-  delivery_status: string;
+  delivery_status: OrderDelliveryStatus;
 
   @Column('int')
   total_amount_in_cents: number;
