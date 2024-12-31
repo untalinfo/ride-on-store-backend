@@ -16,8 +16,11 @@ export class Transaction {
   @ManyToOne(() => Order, (order) => order.transactions)
   order: Order;
 
-  @Column()
-  total_amount_in_cents: string;
+  @Column({ unique: true, nullable: true })
+  external_transaction_id: string;
+
+  @Column('int')
+  total_amount_in_cents: number;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: string;
