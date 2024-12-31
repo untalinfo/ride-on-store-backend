@@ -1,5 +1,5 @@
 import { TransactionRepository } from './../repositories/transaction.repository';
-import { BASE_FEE_RATE } from './../constants/index';
+import { BASE_FEE_RATE, CURRENCY } from './../constants/index';
 import { Injectable } from '@nestjs/common';
 import { Order } from '../entities/order.entity';
 import { CreateOrderDto } from './dtos/create-order-dtos';
@@ -12,6 +12,7 @@ import { WompiService } from 'src/services/wompi/wompi.service';
 import { Product } from 'src/entities/product.entity';
 import { Customer } from 'src/entities/customer.entity';
 import {
+  OrderDelliveryStatus,
   OrderStatus,
   PaymentProcessor,
   TransactionStatus,
@@ -76,7 +77,7 @@ export class OrderService {
         delivery_fee_in_cents:
           calculate_order_amounts_result.data.delivery_fee_in_cents,
         order_status: OrderStatus.ACTIVE,
-        delivery_status: 'PENDING',
+        delivery_status: OrderDelliveryStatus.PENDING,
         total_amount_in_cents:
           calculate_order_amounts_result.data.total_order_in_cents,
       });
@@ -289,7 +290,7 @@ export class OrderService {
           amount_in_cents: order.total_amount_in_cents,
           installments: installments,
           customer_email: order.customer.email,
-          currency: 'COP',
+          currency: CURRENCY,
         });
 
       order.order_status = OrderStatus.PROCESSING;
