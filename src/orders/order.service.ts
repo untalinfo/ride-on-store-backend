@@ -34,7 +34,7 @@ export class OrderService {
   async createOrder(createOrderDto: CreateOrderDto): Promise<Result<any>> {
     const result: Result<any> = {
       hasError: false,
-      message: 'Token created successfully',
+      message: 'Order created successfully',
       data: {},
     };
 
@@ -95,7 +95,12 @@ export class OrderService {
       }
 
       await queryRunner.commitTransaction();
-      result.data.order = savedOrder;
+
+      //sanitize response
+      delete savedOrder.customer;
+      delete savedOrder.products;
+
+      result.data = savedOrder;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error('Error creating order', error);
@@ -116,19 +121,21 @@ export class OrderService {
     const result = {
       hasError: false,
       message: 'Acceptance token created successfully',
-      data: {},
+      data: { order: null },
     };
 
     try {
       const response = await this.wompiService.get_acceptance_tokens();
-      result.data = response;
+      result.data.order = {
+        presigned_acceptance: response.presigned_acceptance,
+        presigned_personal_data_auth: response.presigned_personal_data_auth,
+      };
+      return result;
     } catch (error) {
       console.error('Error creating acceptance token', error);
       result.hasError = true;
       result.message = 'Error creating acceptance token';
     }
-
-    return result;
   }
 
   async createToken(
@@ -137,7 +144,7 @@ export class OrderService {
     const result = {
       hasError: false,
       message: 'Token created successfully',
-      data: {},
+      data: { card: null },
     };
 
     try {
@@ -149,7 +156,7 @@ export class OrderService {
         exp_year: createCardTokenDto.card_exp_year,
       });
 
-      result.data = response;
+      result.data.card = response;
     } catch (error) {
       console.error('Error creating token', error);
       result.hasError = true;
@@ -261,7 +268,7 @@ export class OrderService {
     const result = {
       hasError: false,
       message: 'Payment captured successfully',
-      data: {},
+      data: { transaction: null },
     };
 
     const validate_order_result = await this.validate_order(order_id);
@@ -301,7 +308,8 @@ export class OrderService {
         await this.orderRepository.save(order),
       ]);
 
-      result.data = transaction;
+      delete transaction.order;
+      result.data.transaction = transaction;
     } catch (error) {
       console.error(
         'Error capturing payment',
