@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { RepositoryModule } from '../repositories/repository.module';
-import { TransactionModule } from 'src/services/wompi/wompi.module';
+import { WompiModule } from 'src/services/wompi/wompi.module';
 
 @Module({
-  imports: [RepositoryModule, TransactionModule],
+  imports: [RepositoryModule, WompiModule],
   controllers: [OrderController],
   providers: [OrderService],
 })

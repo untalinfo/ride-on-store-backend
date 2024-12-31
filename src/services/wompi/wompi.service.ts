@@ -128,9 +128,9 @@ export class WompiService {
     return response.data?.data;
   }
 
-  async get_transaction(transaction_id: string): Promise<string> {
+  async getTransaction(transaction_id: string): Promise<string> {
     const response: AxiosResponse = await firstValueFrom(
-      this.httpService.get(`${this.api_url}transactions/${transaction_id}`, {
+      this.httpService.get(`${this.api_url}/transactions/${transaction_id}`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.api_public_key}`,

@@ -6,4 +6,4 @@ import { WompiService } from './wompi.service';
   providers: [WompiService],
   exports: [WompiService],
 })
-export class TransactionModule {}
+export class WompiModule {}
