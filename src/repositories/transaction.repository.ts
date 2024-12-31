@@ -10,7 +10,11 @@ export class TransactionRepository {
     private readonly transactionRepository: Repository<Transaction>,
   ) {}
 
-  async create(transaction: Transaction): Promise<Transaction> {
+  async create(transaction: Partial<Transaction>): Promise<Transaction> {
+    return this.transactionRepository.create(transaction);
+  }
+
+  async save(transaction: Transaction): Promise<Transaction> {
     return this.transactionRepository.save(transaction);
   }
 

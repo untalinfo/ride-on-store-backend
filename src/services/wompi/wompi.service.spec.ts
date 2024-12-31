@@ -1,20 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { TransactionService } from './transaction.service';
+import { WompiService } from './wompi.service';
 import { of } from 'rxjs';
 import * as crypto from 'crypto';
 import { AxiosRequestHeaders, AxiosResponse } from 'axios';
 
-describe('TransactionService', () => {
-  let service: TransactionService;
+describe('WompiService', () => {
+  let service: WompiService;
   let httpService: HttpService;
   let configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        TransactionService,
+        WompiService,
         {
           provide: HttpService,
           useValue: {
@@ -42,7 +42,7 @@ describe('TransactionService', () => {
       ],
     }).compile();
 
-    service = module.get<TransactionService>(TransactionService);
+    service = module.get<WompiService>(WompiService);
     httpService = module.get<HttpService>(HttpService);
     configService = module.get<ConfigService>(ConfigService);
   });

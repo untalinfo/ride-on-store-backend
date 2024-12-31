@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
 
 @Injectable()
-export class TransactionService {
+export class WompiService {
   private readonly api_url: string;
   private readonly api_public_key: string;
   private readonly api_private_key: string;
@@ -93,7 +93,7 @@ export class TransactionService {
     transaction_reference: string;
     credit_card_token: string;
     installments: number;
-  }): Promise<string> {
+  }): Promise<any> {
     const signature = await this.generate_signature({
       transaction_reference,
       amount_in_cents,

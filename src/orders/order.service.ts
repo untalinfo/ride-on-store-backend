@@ -1,3 +1,4 @@
+import { TransactionRepository } from './../repositories/transaction.repository';
 import { BASE_FEE_RATE } from './../constants/index';
 import { Injectable } from '@nestjs/common';
 import { Order } from '../entities/order.entity';
@@ -7,10 +8,14 @@ import { OrderRepository } from '../repositories/order.repository';
 import { ProductRepository } from '../repositories/product.repository';
 import { CreateCardTokenDto } from './dtos/create-card-token-dto';
 import { Result } from 'src/interfaces/response.interface';
-import { TransactionService } from 'src/services/transaction/transaction.service';
+import { WompiService } from 'src/services/wompi/wompi.service';
 import { Product } from 'src/entities/product.entity';
 import { Customer } from 'src/entities/customer.entity';
-import { OrderStatus } from 'src/entities/enums';
+import {
+  OrderStatus,
+  PaymentProcessor,
+  TransactionStatus,
+} from 'src/entities/enums';
 import { DELIVERY_FEE_IN_CENTS } from 'src/constants';
 import { CapturePaymentTokenDto } from './dtos/capture-payment-token-dto';
 import { AppDataSource } from 'data-source';
@@ -21,7 +26,8 @@ export class OrderService {
     private readonly orderRepository: OrderRepository,
     private readonly customerRepository: CustomerRepository,
     private readonly productRepository: ProductRepository,
-    private readonly wompiService: TransactionService,
+    private readonly TransactionRepository: TransactionRepository,
+    private readonly wompiService: WompiService,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Result<any>> {
@@ -249,6 +255,8 @@ export class OrderService {
     payment_method_token,
     installments,
   }: CapturePaymentTokenDto): Promise<Result<any>> {
+    let transaction;
+
     const result = {
       hasError: false,
       message: 'Payment captured successfully',
@@ -264,7 +272,16 @@ export class OrderService {
     const { data: order } = validate_order_result;
 
     try {
-      const response =
+      transaction = await this.TransactionRepository.create({
+        order: order,
+        total_amount_in_cents: order.total_amount_in_cents,
+        status: TransactionStatus.PENDING,
+        payment_processor: PaymentProcessor.WOMPI,
+      });
+
+      await this.TransactionRepository.save(transaction);
+
+      const wompiTransaction =
         await this.wompiService.create_transaction_with_credit_card_token({
           acceptance_token,
           transaction_reference: order_id,
@@ -276,15 +293,24 @@ export class OrderService {
         });
 
       order.order_status = OrderStatus.PROCESSING;
+      transaction.external_transaction_id = wompiTransaction.id;
 
-      //create transaction
+      Promise.all([
+        await this.TransactionRepository.save(transaction),
+        await this.orderRepository.save(order),
+      ]);
 
-      result.data = response;
+      result.data = transaction;
     } catch (error) {
       console.error(
         'Error capturing payment',
         JSON.stringify(error.response.data),
       );
+      if (transaction) {
+        transaction.status = TransactionStatus.FAILED;
+        this.TransactionRepository.save(transaction);
+      }
+
       result.hasError = true;
       result.message = 'Error capturing payment';
     }

@@ -10,7 +10,7 @@ import { Transaction } from './entities/transaction.entity';
 import { OrderModule } from './orders/order.module';
 import { RepositoryModule } from './repositories/repository.module';
 import { ProductModule } from './product/product.module';
-import { TransactionModule } from './services/transaction/transaction.module';
+import { TransactionModule } from './services/wompi/wompi.module';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({

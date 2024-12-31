@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { TransactionService } from './transaction.service';
-
+import { WompiService } from './wompi.service';
 @Module({
   imports: [HttpModule],
-  providers: [TransactionService],
-  exports: [TransactionService],
+  providers: [WompiService],
+  exports: [WompiService],
 })
 export class TransactionModule {}
