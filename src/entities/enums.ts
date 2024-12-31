@@ -15,9 +15,10 @@ export enum OrderDelliveryStatus {
 
 export enum TransactionStatus {
   PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
+  APPROVED = 'APPROVED',
   FAILED = 'FAILED',
   CANCELLED = 'CANCELLED',
+  DECLINED = 'DECLINED',
 }
 
 export enum PaymentProcessor {

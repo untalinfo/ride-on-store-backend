@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
+import { TransactionRepository } from 'src/repositories/transaction.repository';
 
 @Injectable()
 export class WompiService {
@@ -15,6 +16,7 @@ export class WompiService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly transactionRepository: TransactionRepository,
   ) {
     this.api_url = this.configService.get<string>('WOMPI_API_URL');
     this.api_public_key = this.configService.get<string>('WOMPI_PUBLIC_KEY');
@@ -70,7 +72,7 @@ export class WompiService {
     return response.data.data;
   }
 
-  async get_acceptance_tokens(): Promise<string> {
+  async get_acceptance_tokens(): Promise<any> {
     const response: AxiosResponse = await firstValueFrom(
       this.httpService.get(`${this.api_url}merchants/${this.api_public_key}`),
     );
@@ -137,6 +139,18 @@ export class WompiService {
         },
       }),
     );
-    return response.data;
+    return response.data?.data;
+  }
+  async processWebhook(body: any): Promise<void> {
+    try {
+      const { event, data } = body;
+      if (event === 'transaction.updated') {
+        const { transaction } = data;
+        const { reference, status } = transaction;
+        await this.transactionRepository.update(reference, { status });
+      }
+    } catch (error) {
+      console.error('Error processing wompi webhook:', error);
+    }
   }
 }
