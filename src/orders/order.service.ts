@@ -79,8 +79,12 @@ export class OrderService {
 
       // Decrease stock for each product
       for (const product of validate_products_result.data) {
-        product.stock -= 1;
-        await queryRunner.manager.save(product);
+        await queryRunner.manager.increment(
+          Product,
+          { id: product.id },
+          'stock',
+          -1,
+        );
       }
 
       await queryRunner.commitTransaction();
