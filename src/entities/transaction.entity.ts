@@ -1,5 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
+import { PaymentProcessor, TransactionStatus } from './enums';
 
 @Entity()
 export class Transaction {
@@ -9,20 +16,20 @@ export class Transaction {
   @ManyToOne(() => Order, (order) => order.transactions)
   order: Order;
 
-  @Column()
-  total_amount: string;
+  @Column({ unique: true, nullable: true })
+  external_transaction_id: string;
 
-  @Column()
+  @Column('int')
+  total_amount_in_cents: number;
+
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: string;
 
   @Column()
-  status: string;
+  status: TransactionStatus;
 
   @Column()
-  payment_processor: string;
-
-  @Column()
-  psp_id: string;
+  payment_processor: PaymentProcessor;
 
   @Column('json')
   meta: Record<string, any>;

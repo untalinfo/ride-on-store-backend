@@ -10,12 +10,19 @@ export class OrderRepository {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  async create(order: Order): Promise<Order> {
+  async create(order: Partial<Order>): Promise<Order> {
+    return this.orderRepository.create(order);
+  }
+
+  async save(order: Order): Promise<Order> {
     return this.orderRepository.save(order);
   }
 
   async findById(id: string): Promise<Order> {
-    return this.orderRepository.findOne({ where: { id } });
+    return this.orderRepository.findOne({
+      where: { id },
+      relations: ['customer'],
+    });
   }
 
   async update(id: string, order: Partial<Order>): Promise<Order> {

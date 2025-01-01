@@ -10,12 +10,16 @@ export class CustomerRepository {
     private readonly customerRepository: Repository<Customer>,
   ) {}
 
-  async create(customer: Customer): Promise<Customer> {
+  async create(customer: Partial<Customer>): Promise<Customer> {
     return this.customerRepository.save(customer);
   }
 
   async findById(id: string): Promise<Customer> {
     return this.customerRepository.findOne({ where: { id } });
+  }
+
+  async findByEmail(email: string): Promise<Customer> {
+    return this.customerRepository.findOne({ where: { email } });
   }
 
   async update(id: string, customer: Partial<Customer>): Promise<Customer> {

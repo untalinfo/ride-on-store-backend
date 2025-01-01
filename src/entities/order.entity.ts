@@ -4,17 +4,22 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Product } from './product.entity';
 import { Transaction } from './transaction.entity';
 import { Customer } from './customer.entity';
+import { OrderDelliveryStatus } from './enums';
 
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToMany(() => Product, (product) => product.id)
+  @ManyToMany(() => Product, (product) => product.id)
+  @JoinTable()
   products: Product[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.order)
@@ -23,11 +28,11 @@ export class Order {
   @ManyToOne(() => Customer, (customer) => customer.orders)
   customer: Customer;
 
-  @Column()
-  base_fee: string;
+  @Column('int')
+  base_fee_in_cents: number;
 
-  @Column()
-  delivery_fee: string;
+  @Column('int')
+  delivery_fee_in_cents: number;
 
   @Column()
   shipping_addrs_line: string;
@@ -39,11 +44,11 @@ export class Order {
   order_status: string;
 
   @Column()
-  delivery_status: string;
+  delivery_status: OrderDelliveryStatus;
 
-  @Column()
-  total_amount: string;
+  @Column('int')
+  total_amount_in_cents: number;
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: string;
 }
