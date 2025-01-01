@@ -19,7 +19,7 @@ import {
 } from 'src/entities/enums';
 import { DELIVERY_FEE_IN_CENTS } from 'src/constants';
 import { CapturePaymentTokenDto } from './dtos/capture-payment-token-dto';
-import { AppDataSource } from 'data-source';
+import { AppDataSource } from '../../data-source';
 
 @Injectable()
 export class OrderService {
